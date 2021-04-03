@@ -1,5 +1,5 @@
 import numpy as np
-#from scipy.interpolate import CubicSpline
+from scipy.interpolate import CubicSpline as CubS
 import matplotlib.pyplot as plt
 
 class CubicSpline:
@@ -7,44 +7,70 @@ class CubicSpline:
     def __init__(self, x, y):
         self.bounds = x
 
-        cnt_spls = len(self.bounds)-1
+        self.cnt_spls = len(self.bounds)-1 # = n
 
-        self.pol = [[0] * 4 for i in range(cnt_spls)]
+        self.pol = [[0] * 4 for i in range(self.cnt_spls)]
 
-        a = [0]
+        a = []
+        a.append(0)
         bt = 2*(x[2]-x[0])
         a.append(-(x[2]-x[1])/bt)
-        b = [0]
+        b = []
+        b.append(0)
         b.append(3*((y[2]-y[1])/(x[2]-x[1])-(y[1]-y[0])/(x[1]-x[0]))/bt)
-        for i in range(2, cnt_spls-1):
+        for i in range(2, self.cnt_spls-2):
             at = x[i]-x[i-1]
             bt = 2*(x[i+1]-x[i-1])
             a.append(-(x[i+1]-x[i])/(at*a[i-1]+bt))
             b.append((3*((y[i+1]-y[i])/(x[i+1]-x[i])-(y[i]-y[i-1])/(x[i]-x[i-1])) - at*b[i-1])/(at*a[i-1]+bt))
         
-        self.pol[cnt_spls-1][2] = (3*((y[cnt_spls]-y[cnt_spls-1])/(x[cnt_spls]-x[cnt_spls-1])-(y[cnt_spls-1]-y[cnt_spls-2])/(x[cnt_spls-1]-x[cnt_spls-2])) - (x[cnt_spls-1]-x[cnt_spls-2])*b[cnt_spls-1])/((x[cnt_spls-1]-x[cnt_spls-2])*a[cnt_spls-1]+bt)
-        self.pol[cnt_spls-1][0] = y[cnt_spls-1]
-        self.pol[cnt_spls-1][1] = (y[cnt_spls]-y[cnt_spls-1])/(x[cnt_spls]-x[cnt_spls-1]) - 2*self.pol[cnt_spls-1][2]*(x[cnt_spls]-x[cnt_spls-1])/3
-        self.pol[cnt_spls-1][3] = -self.pol[cnt_spls-1][2]/(3*(x[cnt_spls]-x[cnt_spls-1]))
+        self.pol[self.cnt_spls-2][2] = (3*((y[self.cnt_spls-1]-y[self.cnt_spls-2])/(x[self.cnt_spls-1]-x[self.cnt_spls-2])-(y[self.cnt_spls-2]-y[self.cnt_spls-3])/(x[self.cnt_spls-2]-x[self.cnt_spls-3])) - (x[self.cnt_spls-2]-x[self.cnt_spls-3])*b[self.cnt_spls-3])/((x[self.cnt_spls-2]-x[self.cnt_spls-3])*a[self.cnt_spls-3]+(2*(x[self.cnt_spls-1]-x[self.cnt_spls-3])))
 
-        for i in range(cnt_spls-2, -1, -1):
+        for i in range(self.cnt_spls-3, 0, -1):
             self.pol[i][2] = a[i]*self.pol[i+1][2]+b[i]
+
+        #self.pol[self.cnt_spls-1][2] = 0
+        self.pol[self.cnt_spls-1][0] = y[self.cnt_spls-1]
+        #self.pol[self.cnt_spls-1][1] = (y[self.cnt_spls]-y[self.cnt_spls-1])/(x[self.cnt_spls]-x[self.cnt_spls-1]) - (2*self.pol[self.cnt_spls-1][2])*(x[self.cnt_spls]-x[self.cnt_spls-1])/3
+        #self.pol[self.cnt_spls-1][3] = (-self.pol[self.cnt_spls-1][2])/(3*(x[self.cnt_spls]-x[self.cnt_spls-1]))
+        self.pol[self.cnt_spls-1][1] = self.pol[self.cnt_spls-2][1] + 2*self.pol[self.cnt_spls-2][2]*(x[self.cnt_spls-1]-x[self.cnt_spls-2]) + 3*self.pol[self.cnt_spls-2][3]*(x[self.cnt_spls-1]-x[self.cnt_spls-2])*(x[self.cnt_spls-1]-x[self.cnt_spls-2])
+        self.pol[self.cnt_spls-1][2] = self.pol[self.cnt_spls-2][2] + 3*self.pol[self.cnt_spls-2][3]*(x[self.cnt_spls-1]-x[self.cnt_spls-2])
+        self.pol[self.cnt_spls-1][3] = (y[self.cnt_spls]-self.pol[self.cnt_spls-1][0])/((x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])) - self.pol[self.cnt_spls-1][1]/((x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])) - self.pol[self.cnt_spls-1][2]/(x[self.cnt_spls]-x[self.cnt_spls-1])
+
+        self.pol[0][2] = 0
+        
+        for i in range(0, self.cnt_spls-1):
             self.pol[i][0] = y[i]
             self.pol[i][1] = (y[i+1]-y[i])/(x[i+1]-x[i]) - (2*self.pol[i][2]+self.pol[i+1][2])*(x[i+1]-x[i])/3
             self.pol[i][3] = (self.pol[i+1][2]-self.pol[i][2])/(3*(x[i+1]-x[i]))
+
+    def __call__(self, xa):
+        y = []
+        for x in xa:
+            flg = True
+            if x <= self.bounds[0]:
+                y.append(self.pol[0][0] + self.pol[0][1]*(x-self.bounds[0]) + self.pol[0][2]*(x-self.bounds[0])*(x-self.bounds[0]) + self.pol[0][3]*(x-self.bounds[0])*(x-self.bounds[0])*(x-self.bounds[0]))
+                continue
+            for i in range(1, self.cnt_spls+1):
+                if x <= self.bounds[i]:
+                    y.append(self.pol[i-1][0] + self.pol[i-1][1]*(x-self.bounds[i-1]) + self.pol[i-1][2]*(x-self.bounds[i-1])*(x-self.bounds[i-1]) + self.pol[i-1][3]*(x-self.bounds[i-1])*(x-self.bounds[i-1])*(x-self.bounds[i-1]))
+                    flg = False
+                    break
+            if flg:
+                y.append(self.pol[self.cnt_spls-1][0] + self.pol[self.cnt_spls-1][1]*(x-self.bounds[self.cnt_spls-1]) + self.pol[self.cnt_spls-1][2]*(x-self.bounds[self.cnt_spls-1])*(x-self.bounds[self.cnt_spls-1]) + self.pol[self.cnt_spls-1][3]*(x-self.bounds[self.cnt_spls-1])*(x-self.bounds[self.cnt_spls-1])*(x-self.bounds[self.cnt_spls-1]))
+        return y
 
 
 x = [int(x) for x in list(input('Введите значения по x: ')) if x != ' ']
 y = [int(x) for x in list(input('Введите значения по y: ')) if x != ' ']
 
 cs = CubicSpline(x, y)
-print(cs.pol)
 
-#cs = CubicSpline(x, y)
-#xs = np.arange(-5, 5, 0.1)
+xs = np.arange(1, 5, 0.01)
+fig, ax = plt.subplots(figsize=(10,10))
+ax.plot(xs, cs(xs))
 
-#fig, ax = plt.subplots(figsize=(10,10)) 
-#ax.plot(xs, cs(xs))
-#plt.show()
-
-
+css = CubS(x, y)
+ax.plot(xs, css(xs), label="right")
+plt.show()
+print(cs.pol) 
