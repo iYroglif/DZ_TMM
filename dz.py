@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.interpolate import CubicSpline as CubS
 import matplotlib.pyplot as plt
 
 class CubicSpline:
@@ -59,17 +58,14 @@ class CubicSpline:
         for x in xa:
             flg = True
             if x <= self.bounds[0]:
-                #y.append(self.pol[0][0] + self.pol[0][1]*(x-self.bounds[0]) + self.pol[0][2]*(x-self.bounds[0])*(x-self.bounds[0]) + self.pol[0][3]*(x-self.bounds[0])*(x-self.bounds[0])*(x-self.bounds[0]))
                 y.append(self.fin_pol[0][3]*x*x*x + self.fin_pol[0][2]*x*x + self.fin_pol[0][1]*x + self.fin_pol[0][0])
                 continue
             for i in range(1, self.cnt_spls+1):
                 if x <= self.bounds[i]:
-                    #y.append(self.pol[i-1][0] + self.pol[i-1][1]*(x-self.bounds[i-1]) + self.pol[i-1][2]*(x-self.bounds[i-1])*(x-self.bounds[i-1]) + self.pol[i-1][3]*(x-self.bounds[i-1])*(x-self.bounds[i-1])*(x-self.bounds[i-1]))
                     y.append(self.fin_pol[i-1][3]*x*x*x + self.fin_pol[i-1][2]*x*x + self.fin_pol[i-1][1]*x + self.fin_pol[i-1][0])
                     flg = False
                     break
             if flg:
-                #y.append(self.pol[self.cnt_spls-1][0] + self.pol[self.cnt_spls-1][1]*(x-self.bounds[self.cnt_spls-1]) + self.pol[self.cnt_spls-1][2]*(x-self.bounds[self.cnt_spls-1])*(x-self.bounds[self.cnt_spls-1]) + self.pol[self.cnt_spls-1][3]*(x-self.bounds[self.cnt_spls-1])*(x-self.bounds[self.cnt_spls-1])*(x-self.bounds[self.cnt_spls-1]))
                 y.append(self.fin_pol[self.cnt_spls-1][3]*x*x*x + self.fin_pol[self.cnt_spls-1][2]*x*x + self.fin_pol[self.cnt_spls-1][1]*x + self.fin_pol[self.cnt_spls-1][0])
         return y
 
@@ -77,16 +73,23 @@ class CubicSpline:
 x = [int(x) for x in list(input('Введите значения по x: ')) if x != ' ']
 y = [int(x) for x in list(input('Введите значения по y: ')) if x != ' ']
 
+indices = sorted(range(len(x)), key=lambda i: x[i])
+x = [x[i] for i in indices]
+y = [y[i] for i in indices]
+
 cs = CubicSpline(x, y)
 
-xs = np.arange(1, 5, 0.01)
-fig, ax = plt.subplots(figsize=(10,10))
-ax.plot(xs, cs(xs))
+fig, ax = plt.subplots()
 
-css = CubS(x, y)
-ax.plot(xs, css(xs))
+xs = np.arange(x[0], x[1], 0.01)
+ax.plot(xs, cs(xs), label='y={:.3f}x\u00B3{:+.3f}x\u00B2{:+.3f}x{:+.3f}, x\u2208[{}, {}]'.format(cs.fin_pol[0][3], cs.fin_pol[0][2], cs.fin_pol[0][1], cs.fin_pol[0][0], x[0], x[1]))
+
+for i in range(1, len(x)-1):
+    xs = np.arange(x[i], x[i+1], 0.01)
+    ax.plot(xs, cs(xs), label='y={:.3f}x\u00B3{:+.3f}x\u00B2{:+.3f}x{:+.3f}, x\u2208({}, {}]'.format(cs.fin_pol[i][3], cs.fin_pol[i][2], cs.fin_pol[i][1], cs.fin_pol[i][0], x[i], x[i+1]))
+
+plt.plot(x, y, 'o', label='Контрольные точки')
+
+plt.grid(True)
+plt.legend()
 plt.show()
-print(cs.pol) 
-print(cs.fin_pol)
-print(cs([4.11]))
-print(css([4.11]))
