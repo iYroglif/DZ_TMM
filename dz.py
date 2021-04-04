@@ -18,24 +18,23 @@ class CubicSpline:
         b = []
         b.append(0)
         b.append(3*((y[2]-y[1])/(x[2]-x[1])-(y[1]-y[0])/(x[1]-x[0]))/bt)
-        for i in range(2, self.cnt_spls-2):
+        for i in range(2, self.cnt_spls-1):
             at = x[i]-x[i-1]
             bt = 2*(x[i+1]-x[i-1])
             a.append(-(x[i+1]-x[i])/(at*a[i-1]+bt))
             b.append((3*((y[i+1]-y[i])/(x[i+1]-x[i])-(y[i]-y[i-1])/(x[i]-x[i-1])) - at*b[i-1])/(at*a[i-1]+bt))
         
-        self.pol[self.cnt_spls-2][2] = (3*((y[self.cnt_spls-1]-y[self.cnt_spls-2])/(x[self.cnt_spls-1]-x[self.cnt_spls-2])-(y[self.cnt_spls-2]-y[self.cnt_spls-3])/(x[self.cnt_spls-2]-x[self.cnt_spls-3])) - (x[self.cnt_spls-2]-x[self.cnt_spls-3])*b[self.cnt_spls-3])/((x[self.cnt_spls-2]-x[self.cnt_spls-3])*a[self.cnt_spls-3]+(2*(x[self.cnt_spls-1]-x[self.cnt_spls-3])))
+        self.pol[self.cnt_spls-1][2] = (3*((y[self.cnt_spls]-y[self.cnt_spls-1])/(x[self.cnt_spls]-x[self.cnt_spls-1])-(y[self.cnt_spls-1]-y[self.cnt_spls-2])/(x[self.cnt_spls-1]-x[self.cnt_spls-2])) - (x[self.cnt_spls-1]-x[self.cnt_spls-2])*b[self.cnt_spls-2])/((x[self.cnt_spls-1]-x[self.cnt_spls-2])*a[self.cnt_spls-2]+(2*(x[self.cnt_spls]-x[self.cnt_spls-2])))
+        self.pol[self.cnt_spls-1][0] = y[self.cnt_spls-1]
+        self.pol[self.cnt_spls-1][3] = -(self.pol[self.cnt_spls-1][2])/(3*(x[self.cnt_spls]-x[self.cnt_spls-1]))
+        self.pol[self.cnt_spls-1][1] = (y[self.cnt_spls]-y[self.cnt_spls-1])/(x[self.cnt_spls]-x[self.cnt_spls-1]) - self.pol[self.cnt_spls-1][2]*(x[self.cnt_spls]-x[self.cnt_spls-1]) - self.pol[self.cnt_spls-1][3]*(x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])
 
-        for i in range(self.cnt_spls-3, 0, -1):
+        for i in range(self.cnt_spls-2, 0, -1):
             self.pol[i][2] = a[i]*self.pol[i+1][2]+b[i]
 
         #self.pol[self.cnt_spls-1][2] = 0
-        self.pol[self.cnt_spls-1][0] = y[self.cnt_spls-1]
         #self.pol[self.cnt_spls-1][1] = (y[self.cnt_spls]-y[self.cnt_spls-1])/(x[self.cnt_spls]-x[self.cnt_spls-1]) - (2*self.pol[self.cnt_spls-1][2])*(x[self.cnt_spls]-x[self.cnt_spls-1])/3
         #self.pol[self.cnt_spls-1][3] = (-self.pol[self.cnt_spls-1][2])/(3*(x[self.cnt_spls]-x[self.cnt_spls-1]))
-        self.pol[self.cnt_spls-1][1] = self.pol[self.cnt_spls-2][1] + 2*self.pol[self.cnt_spls-2][2]*(x[self.cnt_spls-1]-x[self.cnt_spls-2]) + 3*self.pol[self.cnt_spls-2][3]*(x[self.cnt_spls-1]-x[self.cnt_spls-2])*(x[self.cnt_spls-1]-x[self.cnt_spls-2])
-        self.pol[self.cnt_spls-1][2] = self.pol[self.cnt_spls-2][2] + 3*self.pol[self.cnt_spls-2][3]*(x[self.cnt_spls-1]-x[self.cnt_spls-2])
-        self.pol[self.cnt_spls-1][3] = (y[self.cnt_spls]-self.pol[self.cnt_spls-1][0])/((x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])) - self.pol[self.cnt_spls-1][1]/((x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])) - self.pol[self.cnt_spls-1][2]/(x[self.cnt_spls]-x[self.cnt_spls-1])
 
         self.pol[0][2] = 0
         
@@ -43,6 +42,10 @@ class CubicSpline:
             self.pol[i][0] = y[i]
             self.pol[i][1] = (y[i+1]-y[i])/(x[i+1]-x[i]) - (2*self.pol[i][2]+self.pol[i+1][2])*(x[i+1]-x[i])/3
             self.pol[i][3] = (self.pol[i+1][2]-self.pol[i][2])/(3*(x[i+1]-x[i]))
+
+        #self.pol[self.cnt_spls-1][2] = self.pol[self.cnt_spls-2][2] + 3*self.pol[self.cnt_spls-2][3]*(x[self.cnt_spls-1]-x[self.cnt_spls-2])
+        #self.pol[self.cnt_spls-1][3] = (y[self.cnt_spls]-self.pol[self.cnt_spls-1][0])/((x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])) - self.pol[self.cnt_spls-1][1]/((x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])) - self.pol[self.cnt_spls-1][2]/(x[self.cnt_spls]-x[self.cnt_spls-1])
+        #self.pol[self.cnt_spls-1][2] = (3/2)*((y[self.cnt_spls]-y[self.cnt_spls-1])/((x[self.cnt_spls]-x[self.cnt_spls-1])*(x[self.cnt_spls]-x[self.cnt_spls-1])) - (self.pol[self.cnt_spls-1][1])/(x[self.cnt_spls]-x[self.cnt_spls-1]))
 
     def __call__(self, xa):
         y = []
@@ -71,6 +74,8 @@ fig, ax = plt.subplots(figsize=(10,10))
 ax.plot(xs, cs(xs))
 
 css = CubS(x, y)
-ax.plot(xs, css(xs), label="right")
+ax.plot(xs, css(xs))
 plt.show()
 print(cs.pol) 
+print(cs([4.11]))
+print(css([4.11]))
