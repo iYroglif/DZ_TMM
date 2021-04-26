@@ -81,11 +81,11 @@ cs = CubicSpline(x, y)
 
 fig, ax = plt.subplots()
 
-xs = np.arange(x[0], x[1], 0.01)
+xs = np.arange(x[0], x[1], 0.001)
 ax.plot(xs, cs(xs), label='y={:.3f}x\u00B3{:+.3f}x\u00B2{:+.3f}x{:+.3f}, x\u2208[{}, {}]'.format(cs.fin_pol[0][3], cs.fin_pol[0][2], cs.fin_pol[0][1], cs.fin_pol[0][0], x[0], x[1]))
 
 for i in range(1, len(x)-1):
-    xs = np.arange(x[i], x[i+1], 0.01)
+    xs = np.arange(x[i], x[i+1], 0.001)
     ax.plot(xs, cs(xs), label='y={:.3f}x\u00B3{:+.3f}x\u00B2{:+.3f}x{:+.3f}, x\u2208({}, {}]'.format(cs.fin_pol[i][3], cs.fin_pol[i][2], cs.fin_pol[i][1], cs.fin_pol[i][0], x[i], x[i+1]))
 
 plt.plot(x, y, 'o', label='Контрольные точки')
