@@ -70,8 +70,8 @@ class CubicSpline:
         return y
 
 
-x = [int(x) for x in list(input('Введите значения по x: ')) if x != ' ']
-y = [int(x) for x in list(input('Введите значения по y: ')) if x != ' ']
+x = [int(x) for x in input('Введите значения по x: ').split()]
+y = [int(x) for x in input('Введите значения по y: ').split()]
 
 indices = sorted(range(len(x)), key=lambda i: x[i])
 x = [x[i] for i in indices]
